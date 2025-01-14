@@ -4,6 +4,7 @@ import asyncio
 import sys
 import json
 import os
+from dotenv import load_dotenv
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
 from crawl4ai.content_filter_strategy import PruningContentFilter
 from crawl4ai.markdown_generation_strategy import DefaultMarkdownGenerator
@@ -13,11 +14,11 @@ from crawl4ai.extraction_strategy import LLMExtractionStrategy
 if sys.stdout.encoding != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
 
+# Load environment variables
+load_dotenv()
+
 app = Flask(__name__)
 CORS(app)
-
-# Set OpenAI API Key
-os.environ['OPENAI_API_KEY'] = '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'
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
