@@ -32,8 +32,8 @@ For project documentation and API details, see [AppInfo.md](AppInfo.md).
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/Sim2K/full-stack-react-scrapping.git
-cd full-stack-react-scrapping
+git clone https://github.com/Sim2K/full-stack-react-scrapping-app.git
+cd full-stack-react-scrapping-app
 ```
 
 2. Set up the backend:
