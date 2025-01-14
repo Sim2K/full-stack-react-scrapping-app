@@ -1,0 +1,848 @@
+I will be using Craswl4AI to foa ll crawing functionality. Here are the details below I have coppied from here, https://github.com/unclecode/crawl4ai
+
+Details copied and pasted:
+🚀🤖 Crawl4AI: Open-source LLM Friendly Web Crawler & Scraper.
+unclecode%2Fcrawl4ai | Trendshift
+
+GitHub Stars GitHub Forks
+
+PyPI version Python Version Downloads
+
+License Code style: black Security: bandit Contributor Covenant
+
+Crawl4AI is the #1 trending GitHub repository, actively maintained by a vibrant community. It delivers blazing-fast, AI-ready web crawling tailored for LLMs, AI agents, and data pipelines. Open source, flexible, and built for real-time performance, Crawl4AI empowers developers with unmatched speed, precision, and deployment ease.
+
+✨ Check out latest update v0.4.24x
+
+🎉 Version 0.4.24x is out! Major improvements in extraction strategies with enhanced JSON handling, SSL security, and Amazon product extraction. Plus, a completely revamped content filtering system! Read the release notes →
+
+🧐 Why Crawl4AI?
+Built for LLMs: Creates smart, concise Markdown optimized for RAG and fine-tuning applications.
+Lightning Fast: Delivers results 6x faster with real-time, cost-efficient performance.
+Flexible Browser Control: Offers session management, proxies, and custom hooks for seamless data access.
+Heuristic Intelligence: Uses advanced algorithms for efficient extraction, reducing reliance on costly models.
+Open Source & Deployable: Fully open-source with no API keys—ready for Docker and cloud integration.
+Thriving Community: Actively maintained by a vibrant community and the #1 trending GitHub repository.
+🚀 Quick Start
+Install Crawl4AI:
+# Install the package
+pip install -U crawl4ai
+
+# Run post-installation setup
+crawl4ai-setup
+
+# Verify your installation
+crawl4ai-doctor
+If you encounter any browser-related issues, you can install them manually:
+
+python -m playwright install --with-deps chromium
+Run a simple web crawl:
+import asyncio
+from crawl4ai import *
+
+async def main():
+    async with AsyncWebCrawler() as crawler:
+        result = await crawler.arun(
+            url="https://www.nbcnews.com/business",
+        )
+        print(result.markdown)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+
+Features
+📝 Markdown Generation
+🧹 Clean Markdown: Generates clean, structured Markdown with accurate formatting.
+🎯 Fit Markdown: Heuristic-based filtering to remove noise and irrelevant parts for AI-friendly processing.
+🔗 Citations and References: Converts page links into a numbered reference list with clean citations.
+🛠️ Custom Strategies: Users can create their own Markdown generation strategies tailored to specific needs.
+📚 BM25 Algorithm: Employs BM25-based filtering for extracting core information and removing irrelevant content.
+📊 Structured Data Extraction
+🤖 LLM-Driven Extraction: Supports all LLMs (open-source and proprietary) for structured data extraction.
+🧱 Chunking Strategies: Implements chunking (topic-based, regex, sentence-level) for targeted content processing.
+🌌 Cosine Similarity: Find relevant content chunks based on user queries for semantic extraction.
+🔎 CSS-Based Extraction: Fast schema-based data extraction using XPath and CSS selectors.
+🔧 Schema Definition: Define custom schemas for extracting structured JSON from repetitive patterns.
+🌐 Browser Integration
+🖥️ Managed Browser: Use user-owned browsers with full control, avoiding bot detection.
+🔄 Remote Browser Control: Connect to Chrome Developer Tools Protocol for remote, large-scale data extraction.
+🔒 Session Management: Preserve browser states and reuse them for multi-step crawling.
+🧩 Proxy Support: Seamlessly connect to proxies with authentication for secure access.
+⚙️ Full Browser Control: Modify headers, cookies, user agents, and more for tailored crawling setups.
+🌍 Multi-Browser Support: Compatible with Chromium, Firefox, and WebKit.
+📐 Dynamic Viewport Adjustment: Automatically adjusts the browser viewport to match page content, ensuring complete rendering and capturing of all elements.
+🔎 Crawling & Scraping
+🖼️ Media Support: Extract images, audio, videos, and responsive image formats like srcset and picture.
+🚀 Dynamic Crawling: Execute JS and wait for async or sync for dynamic content extraction.
+📸 Screenshots: Capture page screenshots during crawling for debugging or analysis.
+📂 Raw Data Crawling: Directly process raw HTML (raw:) or local files (file://).
+🔗 Comprehensive Link Extraction: Extracts internal, external links, and embedded iframe content.
+🛠️ Customizable Hooks: Define hooks at every step to customize crawling behavior.
+💾 Caching: Cache data for improved speed and to avoid redundant fetches.
+📄 Metadata Extraction: Retrieve structured metadata from web pages.
+📡 IFrame Content Extraction: Seamless extraction from embedded iframe content.
+🕵️ Lazy Load Handling: Waits for images to fully load, ensuring no content is missed due to lazy loading.
+🔄 Full-Page Scanning: Simulates scrolling to load and capture all dynamic content, perfect for infinite scroll pages.
+
+Quick Test
+Run a quick test (works for both Docker options):
+
+import requests
+
+# Submit a crawl job
+response = requests.post(
+    "http://localhost:11235/crawl",
+    json={"urls": "https://example.com", "priority": 10}
+)
+task_id = response.json()["task_id"]
+
+# Continue polling until the task is complete (status="completed")
+result = requests.get(f"http://localhost:11235/task/{task_id}")
+
+Advanced Usage Examples 🔬
+You can check the project structure in the directory https://github.com/unclecode/crawl4ai/docs/examples. Over there, you can find a variety of examples; here, some popular examples are shared.
+
+📝 Heuristic Markdown Generation with Clean and Fit Markdown
+import asyncio
+from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+from crawl4ai.content_filter_strategy import PruningContentFilter, BM25ContentFilter
+from crawl4ai.markdown_generation_strategy import DefaultMarkdownGenerator
+
+async def main():
+    browser_config = BrowserConfig(
+        headless=True,  
+        verbose=True,
+    )
+    run_config = CrawlerRunConfig(
+        cache_mode=CacheMode.ENABLED,
+        markdown_generator=DefaultMarkdownGenerator(
+            content_filter=PruningContentFilter(threshold=0.48, threshold_type="fixed", min_word_threshold=0)
+        ),
+        # markdown_generator=DefaultMarkdownGenerator(
+        #     content_filter=BM25ContentFilter(user_query="WHEN_WE_FOCUS_BASED_ON_A_USER_QUERY", bm25_threshold=1.0)
+        # ),
+    )
+    
+    async with AsyncWebCrawler(config=browser_config) as crawler:
+        result = await crawler.arun(
+            url="https://docs.micronaut.io/4.7.6/guide/",
+            config=run_config
+        )
+        print(len(result.markdown))
+        print(len(result.fit_markdown))
+        print(len(result.markdown_v2.fit_markdown))
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+Executing JavaScript & Extract Structured Data without LLMs
+import asyncio
+from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+from crawl4ai.extraction_strategy import JsonCssExtractionStrategy
+import json
+
+async def main():
+    schema = {
+    "name": "KidoCode Courses",
+    "baseSelector": "section.charge-methodology .w-tab-content > div",
+    "fields": [
+        {
+            "name": "section_title",
+            "selector": "h3.heading-50",
+            "type": "text",
+        },
+        {
+            "name": "section_description",
+            "selector": ".charge-content",
+            "type": "text",
+        },
+        {
+            "name": "course_name",
+            "selector": ".text-block-93",
+            "type": "text",
+        },
+        {
+            "name": "course_description",
+            "selector": ".course-content-text",
+            "type": "text",
+        },
+        {
+            "name": "course_icon",
+            "selector": ".image-92",
+            "type": "attribute",
+            "attribute": "src"
+        }
+    }
+}
+
+    extraction_strategy = JsonCssExtractionStrategy(schema, verbose=True)
+
+    browser_config = BrowserConfig(
+        headless=False,
+        verbose=True
+    )
+    run_config = CrawlerRunConfig(
+        extraction_strategy=extraction_strategy,
+        js_code=["""(async () => {const tabs = document.querySelectorAll("section.charge-methodology .tabs-menu-3 > div");for(let tab of tabs) {tab.scrollIntoView();tab.click();await new Promise(r => setTimeout(r, 500));}})();"""],
+        cache_mode=CacheMode.BYPASS
+    )
+        
+    async with AsyncWebCrawler(config=browser_config) as crawler:
+        
+        result = await crawler.arun(
+            url="https://www.kidocode.com/degrees/technology",
+            config=run_config
+        )
+
+        companies = json.loads(result.extracted_content)
+        print(f"Successfully extracted {len(companies)} companies")
+        print(json.dumps(companies[0], indent=2))
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+Extracting Structured Data with LLMs
+import os
+import asyncio
+from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+from crawl4ai.extraction_strategy import LLMExtractionStrategy
+from pydantic import BaseModel, Field
+
+class OpenAIModelFee(BaseModel):
+    model_name: str = Field(..., description="Name of the OpenAI model.")
+    input_fee: str = Field(..., description="Fee for input token for the OpenAI model.")
+    output_fee: str = Field(..., description="Fee for output token for the OpenAI model.")
+
+async def main():
+    browser_config = BrowserConfig(verbose=True)
+    run_config = CrawlerRunConfig(
+        word_count_threshold=1,
+        extraction_strategy=LLMExtractionStrategy(
+            # Here you can use any provider that Litellm library supports, for instance: ollama/qwen2
+            # provider="ollama/qwen2", api_token="no-token", 
+            provider="openai/gpt-4o", api_token=os.getenv('OPENAI_API_KEY'), 
+            schema=OpenAIModelFee.schema(),
+            extraction_type="schema",
+            instruction="""From the crawled content, extract all mentioned model names along with their fees for input and output tokens. 
+            Do not miss any models in the entire content. One extracted model JSON format should look like this: 
+            {"model_name": "GPT-4", "input_fee": "US$10.00 / 1M tokens", "output_fee": "US$30.00 / 1M tokens"}."""
+        ),            
+        cache_mode=CacheMode.BYPASS,
+    )
+    
+    async with AsyncWebCrawler(config=browser_config) as crawler:
+        result = await crawler.arun(
+            url='https://openai.com/api/pricing/',
+            config=run_config
+        )
+        print(result.extracted_content)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+Optimized Multi-URL Crawling
+Example Code
+import asyncio
+from typing import List
+from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig
+from crawl4ai.markdown_generation_strategy import DefaultMarkdownGenerator
+
+async def crawl_sequential(urls: List[str]):
+    print("\n=== Sequential Crawling with Session Reuse ===")
+
+    browser_config = BrowserConfig(
+        headless=True,
+        # For better performance in Docker or low-memory environments:
+        extra_args=["--disable-gpu", "--disable-dev-shm-usage", "--no-sandbox"],
+    )
+
+    crawl_config = CrawlerRunConfig(
+        markdown_generator=DefaultMarkdownGenerator()
+    )
+
+    # Create the crawler (opens the browser)
+    crawler = AsyncWebCrawler(config=browser_config)
+    await crawler.start()
+
+    try:
+        session_id = "session1"  # Reuse the same session across all URLs
+        for url in urls:
+            result = await crawler.arun(
+                url=url,
+                config=crawl_config,
+                session_id=session_id
+            )
+            if result.success:
+                print(f"Successfully crawled: {url}")
+                # E.g. check markdown length
+                print(f"Markdown length: {len(result.markdown_v2.raw_markdown)}")
+            else:
+                print(f"Failed: {url} - Error: {result.error_message}")
+    finally:
+        # After all URLs are done, close the crawler (and the browser)
+        await crawler.close()
+
+async def main():
+    urls = [
+        "https://example.com/page1",
+        "https://example.com/page2",
+        "https://example.com/page3"
+    ]
+    await crawl_sequential(urls)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+.. or Parallel Crawling with Browser Reuse
+Overview
+To speed up crawling further, you can crawl multiple URLs in parallel (batches or a concurrency limit). The crawler still uses one browser, but spawns different sessions (or the same, depending on your logic) for each task.
+
+3.2 Example Code
+For this example make sure to install the psutil package.
+
+pip install psutil
+Then you can run the following code:
+
+import os
+import sys
+import psutil
+import asyncio
+
+__location__ = os.path.dirname(os.path.abspath(__file__))
+__output__ = os.path.join(__location__, "output")
+
+# Append parent directory to system path
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(parent_dir)
+
+from typing import List
+from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+
+async def crawl_parallel(urls: List[str], max_concurrent: int = 3):
+    print("\n=== Parallel Crawling with Browser Reuse + Memory Check ===")
+
+    # We'll keep track of peak memory usage across all tasks
+    peak_memory = 0
+    process = psutil.Process(os.getpid())
+
+    def log_memory(prefix: str = ""):
+        nonlocal peak_memory
+        current_mem = process.memory_info().rss  # in bytes
+        if current_mem > peak_memory:
+            peak_memory = current_mem
+        print(f"{prefix} Current Memory: {current_mem // (1024 * 1024)} MB, Peak: {peak_memory // (1024 * 1024)} MB")
+
+    # Minimal browser config
+    browser_config = BrowserConfig(
+        headless=True,
+        verbose=False,   # corrected from 'verbos=False'
+        extra_args=["--disable-gpu", "--disable-dev-shm-usage", "--no-sandbox"],
+    )
+    crawl_config = CrawlerRunConfig(cache_mode=CacheMode.BYPASS)
+
+    # Create the crawler instance
+    crawler = AsyncWebCrawler(config=browser_config)
+    await crawler.start()
+
+    try:
+        # We'll chunk the URLs in batches of 'max_concurrent'
+        success_count = 0
+        fail_count = 0
+        for i in range(0, len(urls), max_concurrent):
+            batch = urls[i : i + max_concurrent]
+            tasks = []
+
+            for j, url in enumerate(batch):
+                # Unique session_id per concurrent sub-task
+                session_id = f"parallel_session_{i + j}"
+                task = crawler.arun(url=url, config=crawl_config, session_id=session_id)
+                tasks.append(task)
+
+            # Check memory usage prior to launching tasks
+            log_memory(prefix=f"Before batch {i//max_concurrent + 1}: ")
+
+            # Gather results
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            # Check memory usage after tasks complete
+            log_memory(prefix=f"After batch {i//max_concurrent + 1}: ")
+
+            # Evaluate results
+            for url, result in zip(batch, results):
+                if isinstance(result, Exception):
+                    print(f"Error crawling {url}: {result}")
+                    fail_count += 1
+                elif result.success:
+                    success_count += 1
+                else:
+                    fail_count += 1
+
+        print(f"\nSummary:")
+        print(f"  - Successfully crawled: {success_count}")
+        print(f"  - Failed: {fail_count}")
+
+    finally:
+        print("\nClosing crawler...")
+        await crawler.close()
+        # Final memory log
+        log_memory(prefix="Final: ")
+        print(f"\nPeak memory usage (MB): {peak_memory // (1024 * 1024)}")
+
+async def main():
+    urls = [
+        "https://example.com/page1",
+        "https://example.com/page2",
+        "https://example.com/page3",
+        "https://example.com/page4"
+    ]
+    await crawl_parallel(urls, max_concurrent=2)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+Extracting JSON (LLM)
+Extracting JSON (LLM)
+In some cases, you need to extract complex or unstructured information from a webpage that a simple CSS/XPath schema cannot easily parse. Or you want AI-driven insights, classification, or summarization. For these scenarios, Crawl4AI provides an LLM-based extraction strategy that:
+
+Works with any large language model supported by LightLLM (Ollama, OpenAI, Claude, and more).
+Automatically splits content into chunks (if desired) to handle token limits, then combines results.
+Lets you define a schema (like a Pydantic model) or a simpler “block” extraction approach.
+Important: LLM-based extraction can be slower and costlier than schema-based approaches. If your page data is highly structured, consider using JsonCssExtractionStrategy or JsonXPathExtractionStrategy first. But if you need AI to interpret or reorganize content, read on!
+
+1. Why Use an LLM?
+Complex Reasoning: If the site’s data is unstructured, scattered, or full of natural language context.
+Semantic Extraction: Summaries, knowledge graphs, or relational data that require comprehension.
+Flexible: You can pass instructions to the model to do more advanced transformations or classification.
+2. Provider-Agnostic via LightLLM
+Crawl4AI uses a “provider string” (e.g., "openai/gpt-4o", "ollama/llama2.0", "aws/titan") to identify your LLM. Any model that LightLLM supports is fair game. You just provide:
+
+provider: The <provider>/<model_name> identifier (e.g., "openai/gpt-4", "ollama/llama2", "huggingface/google-flan", etc.).
+api_token: If needed (for OpenAI, HuggingFace, etc.); local models or Ollama might not require it.
+api_base (optional): If your provider has a custom endpoint.
+This means you aren’t locked into a single LLM vendor. Switch or experiment easily.
+
+3. How LLM Extraction Works
+3.1 Flow
+1. Chunking (optional): The HTML or markdown is split into smaller segments if it’s very long (based on chunk_token_threshold, overlap, etc.).
+2. Prompt Construction: For each chunk, the library forms a prompt that includes your instruction (and possibly schema or examples).
+3. LLM Inference: Each chunk is sent to the model in parallel or sequentially (depending on your concurrency).
+4. Combining: The results from each chunk are merged and parsed into JSON.
+
+3.2 extraction_type
+"schema": The model tries to return JSON conforming to your Pydantic-based schema.
+"block": The model returns freeform text, or smaller JSON structures, which the library collects.
+For structured data, "schema" is recommended. You provide schema=YourPydanticModel.model_json_schema().
+
+4. Key Parameters
+Below is an overview of important LLM extraction parameters. All are typically set inside LLMExtractionStrategy(...). You then put that strategy in your CrawlerRunConfig(..., extraction_strategy=...).
+
+1. provider (str): e.g., "openai/gpt-4", "ollama/llama2".
+2. api_token (str): The API key or token for that model. May not be needed for local models.
+3. schema (dict): A JSON schema describing the fields you want. Usually generated by YourModel.model_json_schema().
+4. extraction_type (str): "schema" or "block".
+5. instruction (str): Prompt text telling the LLM what you want extracted. E.g., “Extract these fields as a JSON array.”
+6. chunk_token_threshold (int): Maximum tokens per chunk. If your content is huge, you can break it up for the LLM.
+7. overlap_rate (float): Overlap ratio between adjacent chunks. E.g., 0.1 means 10% of each chunk is repeated to preserve context continuity.
+8. apply_chunking (bool): Set True to chunk automatically. If you want a single pass, set False.
+9. input_format (str): Determines which crawler result is passed to the LLM. Options include:
+- "markdown": The raw markdown (default).
+- "fit_markdown": The filtered “fit” markdown if you used a content filter.
+- "html": The cleaned or raw HTML.
+10. extra_args (dict): Additional LLM parameters like temperature, max_tokens, top_p, etc.
+11. show_usage(): A method you can call to print out usage info (token usage per chunk, total cost if known).
+
+Example:
+
+extraction_strategy = LLMExtractionStrategy(
+    provider="openai/gpt-4",
+    api_token="YOUR_OPENAI_KEY",
+    schema=MyModel.model_json_schema(),
+    extraction_type="schema",
+    instruction="Extract a list of items from the text with 'name' and 'price' fields.",
+    chunk_token_threshold=1200,
+    overlap_rate=0.1,
+    apply_chunking=True,
+    input_format="html",
+    extra_args={"temperature": 0.1, "max_tokens": 1000},
+    verbose=True
+)
+5. Putting It in CrawlerRunConfig
+Important: In Crawl4AI, all strategy definitions should go inside the CrawlerRunConfig, not directly as a param in arun(). Here’s a full example:
+
+import os
+import asyncio
+import json
+from pydantic import BaseModel, Field
+from typing import List
+from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+from crawl4ai.extraction_strategy import LLMExtractionStrategy
+
+class Product(BaseModel):
+    name: str
+    price: str
+
+async def main():
+    # 1. Define the LLM extraction strategy
+    llm_strategy = LLMExtractionStrategy(
+        provider="openai/gpt-4o-mini",            # e.g. "ollama/llama2"
+        api_token=os.getenv('OPENAI_API_KEY'),
+        schema=Product.schema_json(),            # Or use model_json_schema()
+        extraction_type="schema",
+        instruction="Extract all product objects with 'name' and 'price' from the content.",
+        chunk_token_threshold=1000,
+        overlap_rate=0.0,
+        apply_chunking=True,
+        input_format="markdown",   # or "html", "fit_markdown"
+        extra_args={"temperature": 0.0, "max_tokens": 800}
+    )
+
+    # 2. Build the crawler config
+    crawl_config = CrawlerRunConfig(
+        extraction_strategy=llm_strategy,
+        cache_mode=CacheMode.BYPASS
+    )
+
+    # 3. Create a browser config if needed
+    browser_cfg = BrowserConfig(headless=True)
+
+    async with AsyncWebCrawler(config=browser_cfg) as crawler:
+        # 4. Let's say we want to crawl a single page
+        result = await crawler.arun(
+            url="https://example.com/products",
+            config=crawl_config
+        )
+
+        if result.success:
+            # 5. The extracted content is presumably JSON
+            data = json.loads(result.extracted_content)
+            print("Extracted items:", data)
+
+            # 6. Show usage stats
+            llm_strategy.show_usage()  # prints token usage
+        else:
+            print("Error:", result.error_message)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+6. Chunking Details
+6.1 chunk_token_threshold
+If your page is large, you might exceed your LLM’s context window. chunk_token_threshold sets the approximate max tokens per chunk. The library calculates word→token ratio using word_token_rate (often ~0.75 by default). If chunking is enabled (apply_chunking=True), the text is split into segments.
+
+6.2 overlap_rate
+To keep context continuous across chunks, we can overlap them. E.g., overlap_rate=0.1 means each subsequent chunk includes 10% of the previous chunk’s text. This is helpful if your needed info might straddle chunk boundaries.
+
+6.3 Performance & Parallelism
+By chunking, you can potentially process multiple chunks in parallel (depending on your concurrency settings and the LLM provider). This reduces total time if the site is huge or has many sections.
+
+7. Input Format
+By default, LLMExtractionStrategy uses input_format="markdown", meaning the crawler’s final markdown is fed to the LLM. You can change to:
+
+html: The cleaned HTML or raw HTML (depending on your crawler config) goes into the LLM.
+fit_markdown: If you used, for instance, PruningContentFilter, the “fit” version of the markdown is used. This can drastically reduce tokens if you trust the filter.
+markdown: Standard markdown output from the crawler’s markdown_generator.
+This setting is crucial: if the LLM instructions rely on HTML tags, pick "html". If you prefer a text-based approach, pick "markdown".
+
+LLMExtractionStrategy(
+    # ...
+    input_format="html",  # Instead of "markdown" or "fit_markdown"
+)
+8. Token Usage & Show Usage
+To keep track of tokens and cost, each chunk is processed with an LLM call. We record usage in:
+
+usages (list): token usage per chunk or call.
+total_usage: sum of all chunk calls.
+show_usage(): prints a usage report (if the provider returns usage data).
+llm_strategy = LLMExtractionStrategy(...)
+# ...
+llm_strategy.show_usage()
+# e.g. “Total usage: 1241 tokens across 2 chunk calls”
+If your model provider doesn’t return usage info, these fields might be partial or empty.
+
+9. Example: Building a Knowledge Graph
+Below is a snippet combining LLMExtractionStrategy with a Pydantic schema for a knowledge graph. Notice how we pass an instruction telling the model what to parse.
+
+import os
+import json
+import asyncio
+from typing import List
+from pydantic import BaseModel, Field
+from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+from crawl4ai.extraction_strategy import LLMExtractionStrategy
+
+class Entity(BaseModel):
+    name: str
+    description: str
+
+class Relationship(BaseModel):
+    entity1: Entity
+    entity2: Entity
+    description: str
+    relation_type: str
+
+class KnowledgeGraph(BaseModel):
+    entities: List[Entity]
+    relationships: List[Relationship]
+
+async def main():
+    # LLM extraction strategy
+    llm_strat = LLMExtractionStrategy(
+        provider="openai/gpt-4",
+        api_token=os.getenv('OPENAI_API_KEY'),
+        schema=KnowledgeGraph.schema_json(),
+        extraction_type="schema",
+        instruction="Extract entities and relationships from the content. Return valid JSON.",
+        chunk_token_threshold=1400,
+        apply_chunking=True,
+        input_format="html",
+        extra_args={"temperature": 0.1, "max_tokens": 1500}
+    )
+
+    crawl_config = CrawlerRunConfig(
+        extraction_strategy=llm_strat,
+        cache_mode=CacheMode.BYPASS
+    )
+
+    async with AsyncWebCrawler(config=BrowserConfig(headless=True)) as crawler:
+        # Example page
+        url = "https://www.nbcnews.com/business"
+        result = await crawler.arun(url=url, config=crawl_config)
+
+        if result.success:
+            with open("kb_result.json", "w", encoding="utf-8") as f:
+                f.write(result.extracted_content)
+            llm_strat.show_usage()
+        else:
+            print("Crawl failed:", result.error_message)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+Key Observations:
+
+extraction_type="schema" ensures we get JSON fitting our KnowledgeGraph.
+input_format="html" means we feed HTML to the model.
+instruction guides the model to output a structured knowledge graph.
+10. Best Practices & Caveats
+1. Cost & Latency: LLM calls can be slow or expensive. Consider chunking or smaller coverage if you only need partial data.
+2. Model Token Limits: If your page + instruction exceed the context window, chunking is essential.
+3. Instruction Engineering: Well-crafted instructions can drastically improve output reliability.
+4. Schema Strictness: "schema" extraction tries to parse the model output as JSON. If the model returns invalid JSON, partial extraction might happen, or you might get an error.
+5. Parallel vs. Serial: The library can process multiple chunks in parallel, but you must watch out for rate limits on certain providers.
+6. Check Output: Sometimes, an LLM might omit fields or produce extraneous text. You may want to post-validate with Pydantic or do additional cleanup.
+
+11. Conclusion
+LLM-based extraction in Crawl4AI is provider-agnostic, letting you choose from hundreds of models via LightLLM. It’s perfect for semantically complex tasks or generating advanced structures like knowledge graphs. However, it’s slower and potentially costlier than schema-based approaches. Keep these tips in mind:
+
+Put your LLM strategy in CrawlerRunConfig.
+Use input_format to pick which form (markdown, HTML, fit_markdown) the LLM sees.
+Tweak chunk_token_threshold, overlap_rate, and apply_chunking to handle large content efficiently.
+Monitor token usage with show_usage().
+If your site’s data is consistent or repetitive, consider JsonCssExtractionStrategy first for speed and simplicity. But if you need an AI-driven approach, LLMExtractionStrategy offers a flexible, multi-provider solution for extracting structured JSON from any website.
+
+Next Steps:
+
+1. Experiment with Different Providers
+- Try switching the provider (e.g., "ollama/llama2", "openai/gpt-4o", etc.) to see differences in speed, accuracy, or cost.
+- Pass different extra_args like temperature, top_p, and max_tokens to fine-tune your results.
+
+2. Performance Tuning
+- If pages are large, tweak chunk_token_threshold, overlap_rate, or apply_chunking to optimize throughput.
+- Check the usage logs with show_usage() to keep an eye on token consumption and identify potential bottlenecks.
+
+3. Validate Outputs
+- If using extraction_type="schema", parse the LLM’s JSON with a Pydantic model for a final validation step.
+- Log or handle any parse errors gracefully, especially if the model occasionally returns malformed JSON.
+
+4. Explore Hooks & Automation
+- Integrate LLM extraction with hooks for complex pre/post-processing.
+- Use a multi-step pipeline: crawl, filter, LLM-extract, then store or index results for further analysis.
+
+Last Updated: 2025-01-01
+
+That’s it for Extracting JSON (LLM)—now you can harness AI to parse, classify, or reorganize data on the web. Happy crawling!
+
+Extracting JSON (No LLM)
+Example:
+import json
+import asyncio
+from crawl4ai import AsyncWebCrawler, CrawlerRunConfig, CacheMode
+from crawl4ai.extraction_strategy import JsonCssExtractionStrategy
+
+async def extract_crypto_prices():
+    # 1. Define a simple extraction schema
+    schema = {
+        "name": "Crypto Prices",
+        "baseSelector": "div.crypto-row",    # Repeated elements
+        "fields": [
+            {
+                "name": "coin_name",
+                "selector": "h2.coin-name",
+                "type": "text"
+            },
+            {
+                "name": "price",
+                "selector": "span.coin-price",
+                "type": "text"
+            }
+        ]
+    }
+
+    # 2. Create the extraction strategy
+    extraction_strategy = JsonCssExtractionStrategy(schema, verbose=True)
+
+    # 3. Set up your crawler config (if needed)
+    config = CrawlerRunConfig(
+        # e.g., pass js_code or wait_for if the page is dynamic
+        # wait_for="css:.crypto-row:nth-child(20)"
+        cache_mode = CacheMode.BYPASS,
+        extraction_strategy=extraction_strategy,
+    )
+
+    async with AsyncWebCrawler(verbose=True) as crawler:
+        # 4. Run the crawl and extraction
+        result = await crawler.arun(
+            url="https://example.com/crypto-prices",
+
+            config=config
+        )
+
+        if not result.success:
+            print("Crawl failed:", result.error_message)
+            return
+
+        # 5. Parse the extracted JSON
+        data = json.loads(result.extracted_content)
+        print(f"Extracted {len(data)} coin entries")
+        print(json.dumps(data[0], indent=2) if data else "No data found")
+
+asyncio.run(extract_crypto_prices())
+
+Example 2:
+import json
+import asyncio
+from crawl4ai import AsyncWebCrawler, CrawlerRunConfig
+from crawl4ai.extraction_strategy import JsonXPathExtractionStrategy
+
+async def extract_crypto_prices_xpath():
+    # 1. Minimal dummy HTML with some repeating rows
+    dummy_html = """
+    <html>
+      <body>
+        <div class='crypto-row'>
+          <h2 class='coin-name'>Bitcoin</h2>
+          <span class='coin-price'>$28,000</span>
+        </div>
+        <div class='crypto-row'>
+          <h2 class='coin-name'>Ethereum</h2>
+          <span class='coin-price'>$1,800</span>
+        </div>
+      </body>
+    </html>
+    """
+
+    # 2. Define the JSON schema (XPath version)
+    schema = {
+        "name": "Crypto Prices via XPath",
+        "baseSelector": "//div[@class='crypto-row']",
+        "fields": [
+            {
+                "name": "coin_name",
+                "selector": ".//h2[@class='coin-name']",
+                "type": "text"
+            },
+            {
+                "name": "price",
+                "selector": ".//span[@class='coin-price']",
+                "type": "text"
+            }
+        ]
+    }
+
+    # 3. Place the strategy in the CrawlerRunConfig
+    config = CrawlerRunConfig(
+        extraction_strategy=JsonXPathExtractionStrategy(schema, verbose=True)
+    )
+
+    # 4. Use raw:// scheme to pass dummy_html directly
+    raw_url = f"raw://{dummy_html}"
+
+    async with AsyncWebCrawler(verbose=True) as crawler:
+        result = await crawler.arun(
+            url=raw_url,
+            config=config
+        )
+
+        if not result.success:
+            print("Crawl failed:", result.error_message)
+            return
+
+        data = json.loads(result.extracted_content)
+        print(f"Extracted {len(data)} coin rows")
+        if data:
+            print("First item:", data[0])
+
+asyncio.run(extract_crypto_prices_xpath())
+
+Markdown Generation Basics
+Example:
+Here’s a minimal code snippet that uses the DefaultMarkdownGenerator with no additional filtering:
+
+import asyncio
+from crawl4ai import AsyncWebCrawler, CrawlerRunConfig
+from crawl4ai.markdown_generation_strategy import DefaultMarkdownGenerator
+
+async def main():
+    config = CrawlerRunConfig(
+        markdown_generator=DefaultMarkdownGenerator()
+    )
+    async with AsyncWebCrawler() as crawler:
+        result = await crawler.arun("https://example.com", config=config)
+
+        if result.success:
+            print("Raw Markdown Output:\n")
+            print(result.markdown)  # The unfiltered markdown from the page
+        else:
+            print("Crawl failed:", result.error_message)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+Configuring the Default Markdown Generator
+You can tweak the output by passing an options dict to DefaultMarkdownGenerator. For example:
+
+from crawl4ai.markdown_generation_strategy import DefaultMarkdownGenerator
+from crawl4ai import AsyncWebCrawler, CrawlerRunConfig
+
+async def main():
+    # Example: ignore all links, don't escape HTML, and wrap text at 80 characters
+    md_generator = DefaultMarkdownGenerator(
+        options={
+            "ignore_links": True,
+            "escape_html": False,
+            "body_width": 80
+        }
+    )
+
+    config = CrawlerRunConfig(
+        markdown_generator=md_generator
+    )
+
+    async with AsyncWebCrawler() as crawler:
+        result = await crawler.arun("https://example.com/docs", config=config)
+        if result.success:
+            print("Markdown:\n", result.markdown[:500])  # Just a snippet
+        else:
+            print("Crawl failed:", result.error_message)
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
+Some commonly used options:
+
+ignore_links (bool): Whether to remove all hyperlinks in the final markdown.
+ignore_images (bool): Remove all ![image]() references.
+escape_html (bool): Turn HTML entities into text (default is often True).
+body_width (int): Wrap text at N characters. 0 or None means no wrapping.
+skip_internal_links (bool): If True, omit #localAnchors or internal links referencing the same page.
+include_sup_sub (bool): Attempt to handle <sup> / <sub> in a more readable way.
